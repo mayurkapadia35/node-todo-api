@@ -89,19 +89,33 @@ app.patch('/todos/:id',(req,res)=>{
         body.completed=false;
         body.completedAt=null;
     }
-    todo.findByIdAndUpdate(id,{$set: body},{new: true}).then((todo)=>{
+    todo.findByIdAndUpdate(id,{$set: body},{new: true}).then((docs)=>{
 
-        if(!todo){
+        if(!docs){
             return res.status(400).send();
         }
 
-        res.send({todo});
+        res.send({docs});
     }).catch((e)=>{
         res.status(400).send();
     })
-
-
 });
+
+app.post('/users',(req,res)=>{
+
+    var body=_.pick(req.body,['email','password']);
+    var user=new User(body);
+
+    user.save().then(()=> {
+        return user.generateAuthToken();
+    }).then((token)=>{
+        res.header('x-auth',token).send(user);
+    }).catch((e) =>{
+        res.status(400).send(e);
+    })
+});
+
+
 
 app.listen(3001,()=>{
     console.log("Server is started on 3001");
